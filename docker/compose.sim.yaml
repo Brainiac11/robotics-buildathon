@@ -1,0 +1,34 @@
+# Simulator in Docker, for laptops without a Python setup.
+#
+#   docker compose -f docker/compose.sim.yaml up sim            # dashboard: http://localhost:8080
+#   APP=apps/02_drive_square docker compose -f docker/compose.sim.yaml run --rm app   # in a second terminal
+#
+# Options (environment variables): SCENE=table|pick|empty|targets   BASE=1 (enable the wheels)   APP=<app directory>
+name: buildathon-sim
+services:
+  sim:
+    build: {context: .., dockerfile: docker/Dockerfile.sim}
+    image: buildathon-sim
+    command: ["--scene", "${SCENE:-table}"]
+    environment:
+      BUILDATHON_BASE_ENABLED: "${BASE:-0}"    # the wheels are off by default; BASE=1 enables them
+    ports: ["5560:5560", "5561:5561", "5562:5562", "8080:8080"]
+    volumes:
+      - ../config:/repo/config:ro
+    init: true
+
+  app:
+    build: {context: .., dockerfile: docker/Dockerfile.app}
+    image: buildathon-app
+    profiles: ["app"]
+    environment:
+      ROBOT_HOST: sim
+    volumes:
+      - ../${APP:-apps/00_hello}:/app
+      - ../packages/sdk:/sdk:ro
+      - app-deps:/deps
+    # No depends_on: it would recreate the simulator with this command's SCENE/BASE values.
+    init: true
+
+volumes:
+  app-deps:

@@ -1,0 +1,17 @@
+# The simulator: robot host + MuJoCo, CPU-only software rendering. Works on any laptop.
+#   docker compose -f docker/compose.sim.yaml up
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends libosmesa6 libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV MUJOCO_GL=osmesa PYOPENGL_PLATFORM=osmesa PYTHONUNBUFFERED=1 BUILDATHON_ROOT=/repo
+WORKDIR /repo
+COPY packages/sdk packages/sdk
+COPY packages/host packages/host
+RUN pip install --no-cache-dir ./packages/sdk "./packages/host[sim]"
+COPY config config
+COPY sim sim
+
+EXPOSE 5560 5561 5562 8080
+ENTRYPOINT ["python", "-m", "buildathon_host", "--backend", "sim"]

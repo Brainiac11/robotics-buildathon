@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+*.egg-info/
+.env
+.simcheck/
+traces/
+snapshots/
+recordings/
+.station/
+.vscode/
+.robot-token
+slots/

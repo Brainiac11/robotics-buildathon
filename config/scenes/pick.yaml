@@ -1,0 +1,9 @@
+# A small cube on a pedestal within the arm's reach, for manipulation tests.
+# The base does not need to move, so this scene suits arm-only mode.
+description: Cube on a pedestal within reach of the arm
+seed: 0
+randomize: {pos_jitter_m: 0.01}
+robot_start: {x: 0.0, y: 0.0, theta_deg: 0.0}
+objects:
+  - {name: pedestal, type: box, size_m: [0.12, 0.16, 0.10], pos_m: [0.30, 0.0, 0.05], rgba: [0.55, 0.45, 0.35, 1], movable: false}
+  - {name: cube, type: box, size_m: [0.025, 0.025, 0.025], pos_m: [0.30, 0.0, 0.1125], rgba: [0.9, 0.1, 0.1, 1], mass_kg: 0.01}

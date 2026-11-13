@@ -1,0 +1,7 @@
+# Stable name for the servo controller board, whatever order USB devices appear in.
+# Waveshare / Feetech bus servo adapter: QinHeng CH343 "USB Single Serial" (1a86:55d3).
+# Some boards use a CH340 (1a86:7523) instead; both are matched.
+# If you ever connect two such boards, add ATTRS{serial}=="<serial>" to pick one
+# (find it with: udevadm info -a /dev/ttyACM0 | grep serial).
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", SYMLINK+="buildathon-bus", GROUP="dialout", MODE="0660"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", SYMLINK+="buildathon-bus", GROUP="dialout", MODE="0660"

@@ -1,0 +1,10 @@
+# Coloured blocks on the floor around the robot, for vision and navigation tests.
+# size_m is the full size of each box (8 cm cubes here); pos_m is its centre.
+description: Coloured targets on the floor
+seed: 0
+randomize: {pos_jitter_m: 0.05}   # positions move by up to this much, depending on the seed
+robot_start: {x: 0.0, y: 0.0, theta_deg: 0.0}
+objects:
+  - {name: red_block, type: box, size_m: [0.08, 0.08, 0.08], pos_m: [0.9, 0.0, 0.04], rgba: [0.9, 0.1, 0.1, 1], mass_kg: 0.1}
+  - {name: green_block, type: box, size_m: [0.08, 0.08, 0.08], pos_m: [0.7, 0.6, 0.04], rgba: [0.1, 0.7, 0.2, 1], mass_kg: 0.1}
+  - {name: blue_block, type: box, size_m: [0.08, 0.08, 0.08], pos_m: [0.7, -0.6, 0.04], rgba: [0.1, 0.3, 0.9, 1], mass_kg: 0.1}

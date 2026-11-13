@@ -1,0 +1,102 @@
+# Single source of truth for the robot. The real host and the simulator both read this file.
+# Units follow LeRobot: metres, m/s, degrees, deg/s, gripper 0-100.
+# Frame: +x forward, +y left, +theta counter-clockwise seen from above.
+#
+# VALUES MARKED "MEASURE" ARE LEKIWI DEFAULTS, NOT MEASUREMENTS OF THIS ROBOT.
+# Replace them during hardware bring-up (docs/hardware-bringup.md).
+
+robot:
+  name: so101-vehicle
+
+base:
+  present: true            # wheel servos (IDs 7, 8, 9) are on the bus. false = arm only on the bus.
+  # Driving allowed? false = arm-only mode: every base command is zeroed and the wheels are locked.
+  # The Build-a-thon runs arm-only (the robot is clamped to a table). Organizers can switch the
+  # wheels on for a team: `robot sim --base`, `robot base on`, or the dashboard.
+  enabled: false
+  disabled_behavior: lock  # lock = wheels hold still under torque; free = wheels can be pushed.
+  wheel_radius_m: 0.05     # MEASURE
+  base_radius_m: 0.125     # MEASURE: centre of the base to the wheel contact point
+  # Where each wheel sits around the base, counter-clockwise from straight ahead (+x).
+  # Order is always: left (ID 7), back (ID 8), right (ID 9).
+  wheel_positions_deg: [60, 180, -60]   # MEASURE
+  # Roller angle relative to the wheel's axle direction: 0 = omni wheel (rollers at 90 degrees
+  # to the wheel plane), +45 or -45 = mecanum wheel.
+  roller_angle_deg: [0, 0, 0]           # MEASURE: check which kind of wheel is fitted
+  wheel_direction: [1, 1, 1]            # flip a sign to -1 if `robot wheel-test` shows it reversed
+  max_wheel_raw: 3000                   # servo velocity cap in raw ticks (LeKiwi default)
+
+limits:
+  base:
+    max_linear_m_s: 0.30
+    max_angular_deg_s: 90
+    max_linear_accel_m_s2: 0.6
+    max_angular_accel_deg_s2: 180
+  arm:
+    max_joint_speed_deg_s: 120
+    max_gripper_speed_pct_s: 200
+    joints_deg:
+      shoulder_pan: [-100, 100]
+      shoulder_lift: [-95, 95]
+      elbow_flex: [-92, 92]
+      wrist_flex: [-90, 90]
+      wrist_roll: [-150, 150]
+    gripper_pct: [0, 100]
+  safe_mode_scale: 0.5     # speed limits are multiplied by this in safe mode
+
+safety:
+  watchdog_timeout_s: 0.5  # no command for this long: base stops, arm holds
+  # "auto" means: required on the real robot, not required in sim or mock.
+  heartbeat_required: auto # organizer must keep sending a heartbeat for the robot to move
+  heartbeat_timeout_s: 1.0
+  session_required: auto   # commands must carry the active session id
+  max_runtime_s: 300       # a session is stopped after this long
+  min_servo_voltage: 0     # 0 = check disabled. The servos read about 11.4 V on this robot (12 V type)
+  # Move the arm to the "home" pose before the host releases torque on shutdown.
+  # Leave false until the "home" pose below has been checked on the real arm.
+  park_on_shutdown: false
+
+arm:
+  named_poses_deg:
+    home: {shoulder_pan: 0, shoulder_lift: -90, elbow_flex: 90, wrist_flex: 60, wrist_roll: 0}
+    ready: {shoulder_pan: 0, shoulder_lift: -30, elbow_flex: 40, wrist_flex: 50, wrist_roll: 0}
+    up: {shoulder_pan: 0, shoulder_lift: 0, elbow_flex: 0, wrist_flex: 0, wrist_roll: 0}
+
+camera:
+  name: camera             # the key apps use: obs.image("camera"); obs.image() with no name also works
+  # Where the camera physically is:
+  #   workspace   fixed on a stand, looking at the table in front of the arm (the Build-a-thon setup)
+  #   wrist       on the gripper
+  #   base_front  on the front of the wheeled base, looking ahead (for driving)
+  mount: workspace
+  width: 640
+  height: 480
+  fps: 15                  # frames per second sent to apps
+  jpeg_quality: 80
+  fovy_deg: 44             # vertical field of view; LifeCam HD-3000 at 640x480 is about 44
+  # Real robot only:
+  device: /dev/v4l/by-id/CHANGE-ME-video-index0   # MEASURE: `robot doctor` prints the right path
+  fourcc: MJPG
+  rotation_deg: 0
+  mounts:                  # camera pose for the simulator
+    # Positions are measured from the centre of the robot's base at table level: [forward, left, up].
+    # workspace: where the camera is, and the point on the table it is aimed at.
+    # MEASURE both once the real camera is placed, so the simulator shows the same view.
+    workspace: {pos_m: [0.80, 0.0, 0.50], look_at_m: [0.25, 0.0, 0.05]}
+    base_front: {pos_m: [0.16, 0.0, 0.13], pitch_down_deg: 20}   # MEASURE
+    wrist: {}              # uses the SO-101 model's built-in wrist camera mount
+
+control:
+  rate_hz: 30
+
+network:
+  port_obs: 5560           # observations (PUB)
+  port_cmd: 5561           # commands (PULL)
+  port_rpc: 5562           # requests: hello, status, e-stop, lockstep step (REP)
+  port_dashboard: 8080
+  # Ports 5555/5556 are reserved for the LeRobot LeKiwiClient compatibility shim (not built yet).
+
+real:
+  serial_port: /dev/buildathon-bus   # udev symlink created by scripts/pi/bootstrap.sh
+  robot_id: buildathon
+  calibration_dir: /data/calibration

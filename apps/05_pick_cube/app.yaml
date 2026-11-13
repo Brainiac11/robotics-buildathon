@@ -1,0 +1,3 @@
+needs_base: false    # arm-only: deployed with the wheels switched off
+scene: pick
+duration_s: 30

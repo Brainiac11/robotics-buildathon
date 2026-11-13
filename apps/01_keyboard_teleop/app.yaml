@@ -1,0 +1,4 @@
+needs_base: true
+camera: base_front   # this app expects the camera on the front of the wheeled base
+scene: empty
+interactive: true    # needs a person at the keyboard, so sim-check skips it

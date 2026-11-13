@@ -1,0 +1,29 @@
+# The robot host for the Raspberry Pi 4 (linux/arm64): LeRobot drivers + our host.
+# NOT YET RUN ON A PI. See docs/hardware-bringup.md, step 2, for the smoke test.
+#
+# Build on the Pi:   docker compose -f docker/compose.robot.yaml build host
+# or cross-build:    docker buildx build --platform linux/arm64 -f docker/Dockerfile.host-real -t buildathon-host-real --load .
+FROM python:3.12-slim-trixie
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libglib2.0-0 libgl1 v4l-utils udev git \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONUNBUFFERED=1 PIP_DISABLE_PIP_VERSION_CHECK=1 BUILDATHON_ROOT=/repo \
+    HF_LEROBOT_CALIBRATION=/data/calibration HF_HUB_OFFLINE=1
+
+# PyTorch from the CPU index: the default aarch64 wheel on PyPI pulls ~480 MB of CUDA packages.
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch torchvision
+# pyarrow 21 used ARMv8.1 instructions the Pi 4's Cortex-A72 lacks ("Illegal instruction").
+RUN pip install --no-cache-dir "lerobot[lekiwi]==0.7.0" "pyarrow>=22"
+
+WORKDIR /repo
+COPY packages/sdk packages/sdk
+COPY packages/host packages/host
+RUN pip install --no-cache-dir ./packages/sdk ./packages/host
+COPY config config
+COPY docker/host-entrypoint.sh /usr/local/bin/host-entrypoint
+RUN chmod +x /usr/local/bin/host-entrypoint
+
+EXPOSE 5560 5561 5562 8080
+ENTRYPOINT ["host-entrypoint"]

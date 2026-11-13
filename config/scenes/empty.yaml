@@ -1,0 +1,4 @@
+# An empty floor. Good for first tests of driving and arm motion.
+description: Empty floor
+objects: []
+robot_start: {x: 0.0, y: 0.0, theta_deg: 0.0}

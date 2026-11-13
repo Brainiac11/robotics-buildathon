@@ -1,0 +1,70 @@
+# Runs ON THE RASPBERRY PI. NOT YET RUN ON A PI.
+#
+#   docker compose -f docker/compose.robot.yaml up -d host          # the robot host (starts on boot)
+#   docker compose -f docker/compose.robot.yaml run --rm tools doctor
+#   docker compose -f docker/compose.robot.yaml run --rm tools wheel-test
+#
+# Settings come from /opt/buildathon/robot.env (written by scripts/pi/bootstrap.sh):
+#   BUILDATHON_ORGANIZER_TOKEN   secret for organizer actions
+#   BUILDATHON_BASE_ENABLED      1 or 0 (0 = arm-only mode)
+name: buildathon
+x-host: &host
+  build: {context: .., dockerfile: docker/Dockerfile.host-real}
+  image: buildathon-host-real
+  env_file: [{path: /opt/buildathon/robot.env, required: false}]
+  volumes:
+    - ../config:/repo/config:ro
+    - /opt/buildathon/calibration:/data/calibration
+    - /dev:/dev                      # with the cgroup rules below, a replugged device keeps working
+    - /run/udev:/run/udev:ro
+  # Character devices: 166 = ttyACM, 188 = ttyUSB, 81 = video4linux.
+  device_cgroup_rules: ["c 166:* rmw", "c 188:* rmw", "c 81:* rmw"]
+  group_add: ["20", "44"]            # dialout, video (numeric: names are resolved inside the image)
+  init: true
+
+services:
+  host:
+    <<: *host
+    restart: unless-stopped
+    stop_grace_period: 20s
+    ports: ["5560:5560", "5562:5562", "8080:8080"]   # 5561 (commands) is NOT published: see tether
+    networks: [robot]
+
+  # Publishes the command port on the network so a laptop can control the robot directly.
+  # Start only for a tethered slot:  docker compose -f docker/compose.robot.yaml --profile tether up -d tether
+  tether:
+    image: alpine/socat
+    profiles: ["tether"]
+    command: ["TCP-LISTEN:5561,fork,reuseaddr", "TCP:host:5561"]
+    ports: ["5561:5561"]
+    networks: [robot]
+
+  app:
+    build: {context: .., dockerfile: docker/Dockerfile.app}
+    image: buildathon-app
+    profiles: ["app"]
+    container_name: buildathon-app
+    environment:
+      ROBOT_HOST: host
+      ROBOT_SESSION: "${ROBOT_SESSION:-}"
+    volumes:
+      - ${APP_DIR:-/opt/buildathon/app}:/app
+      - ../packages/sdk:/sdk:ro
+      - app-deps:/deps
+    networks: [robot]
+    mem_limit: 1g
+    init: true                       # no devices, not privileged: apps cannot reach the hardware
+
+  tools:
+    <<: *host
+    profiles: ["tools"]
+    entrypoint: ["host-entrypoint", "tool"]
+    stdin_open: true
+    tty: true
+    network_mode: host
+
+networks:
+  robot:
+
+volumes:
+  app-deps:

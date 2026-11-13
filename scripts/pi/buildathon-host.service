@@ -1,0 +1,19 @@
+# Starts the robot host container at boot. Installed by scripts/pi/bootstrap.sh.
+[Unit]
+Description=Build-a-thon robot host
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/buildathon/repo
+ExecStart=/usr/bin/docker compose -f docker/compose.robot.yaml up -d host
+ExecStop=/usr/bin/docker compose -f docker/compose.robot.yaml stop host
+# Belt and braces: zero the wheels whenever the service stops, however the host ended.
+ExecStopPost=-/usr/bin/docker compose -f docker/compose.robot.yaml run --rm tools stop-wheels
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

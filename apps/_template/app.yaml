@@ -1,0 +1,3 @@
+needs_base: false    # true only if your app drives the wheels (off by default at the event)
+scene: table         # simulation scene from config/scenes/: table | pick | empty | targets
+duration_s: 20       # how long sim-check runs the app, in simulated seconds

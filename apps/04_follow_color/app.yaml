@@ -1,0 +1,4 @@
+needs_base: true     # drives the wheels: only for teams whose robot has the base enabled
+camera: base_front   # expects the camera on the front of the wheeled base, not the workspace camera
+scene: targets
+duration_s: 30

@@ -1,0 +1,12 @@
+# The Build-a-thon default: the arm at a table with three small cubes and a target pad in reach.
+# The "floor" here is the table top. size_m is the full size of each box; pos_m is its centre,
+# measured from the centre of the robot's base: [forward, left, up].
+description: Table top with three cubes and a target pad
+seed: 0
+randomize: {pos_jitter_m: 0.01}   # cubes move by up to this much, depending on the seed
+robot_start: {x: 0.0, y: 0.0, theta_deg: 0.0}
+objects:
+  - {name: red_cube, type: box, size_m: [0.025, 0.025, 0.025], pos_m: [0.30, 0.10, 0.0125], rgba: [0.9, 0.1, 0.1, 1], mass_kg: 0.01}
+  - {name: green_cube, type: box, size_m: [0.025, 0.025, 0.025], pos_m: [0.30, -0.10, 0.0125], rgba: [0.1, 0.7, 0.2, 1], mass_kg: 0.01}
+  - {name: blue_cube, type: box, size_m: [0.025, 0.025, 0.025], pos_m: [0.36, 0.0, 0.0125], rgba: [0.1, 0.3, 0.9, 1], mass_kg: 0.01}
+  - {name: pad, type: box, size_m: [0.10, 0.10, 0.004], pos_m: [0.22, 0.22, 0.002], rgba: [0.95, 0.8, 0.1, 1], movable: false}

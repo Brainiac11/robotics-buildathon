@@ -1,0 +1,28 @@
+[project]
+name = "buildathon-workspace"
+version = "0.1.0"
+description = "Build-a-thon: SO-101 arm on a 3-wheel base. SDK, robot host, simulator and tooling."
+requires-python = ">=3.12"
+dependencies = ["buildathon", "buildathon-host[sim]", "buildathon-cli"]
+
+[tool.uv.workspace]
+members = ["packages/sdk", "packages/host", "packages/cli"]
+
+[tool.uv.sources]
+buildathon = { workspace = true }
+buildathon-host = { workspace = true }
+buildathon-cli = { workspace = true }
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 130
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501", "B905", "B027", "E741"]
